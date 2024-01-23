@@ -28,30 +28,19 @@ int fireMode = 0;
 // 0: semiAuto, 1:3Burst, 2:Auto
 
 void setup() {
-  //Pusher recieves power when you send a LOW signal. Initializes pusher to HIGH.
-  pinMode(pusher, OUTPUT);
-  digitalWrite(pusher, HIGH);
-  delay(400);
-  //Hammer recieves power when you send a HIGH signal. Initializes hammer to LOW.
-  pinMode(hammer,OUTPUT);
-  digitalWrite(hammer,LOW);
+ 
   
   Serial.begin(115200);
 
   //Initializes all the switches
   pinMode(feederStart, INPUT_PULLUP);
   pinMode(feederStop, INPUT_PULLUP);
-  pinMode(hammerStop, INPUT_PULLUP);
-  pinMode(pusherStop,INPUT_PULLUP);
-  pinMode(trigSwitch, INPUT_PULLUP);
-  pinMode(revSwitch, INPUT_PULLUP);
+
 
   //Initializes LED strip
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
 
-  //Initializes flywheels and feeder. Both recieve power when a HIGH signal is sent.
-  pinMode(flywheels, OUTPUT);
-  digitalWrite(flywheels,LOW);
+  
   pinMode(feeder,OUTPUT);
   digitalWrite(feeder,LOW);
 
@@ -69,19 +58,7 @@ void setup() {
 //Called when a dart needs to be loaded
 void loadDart(){
 
-  //Checks to see if hammer is still extended before loading a dart
-  bool hStop = !digitalRead(hammerStop);
-  if(!hStop){
-    Serial.println("HAMMER HAS NOT RETURNED TO STARTING POSITION. THERE IS A JAM.");
-    return;
-  }
-
-  //Checks to see if pusher is still extended before loading a dart
-  bool pusherExtended = digitalRead(pusherStop);
-  if(pusherExtended){
-    Serial.println("THE PUSHER IS EXTENDED. LOADING IS DISABLED UNTIL PUSHER RETRACTS.");
-    return;
-  }
+ 
 
   long long feedTimerStart = millis();
   bool shouldHammer = false;
@@ -130,63 +107,17 @@ void loadDart(){
 }
 
 //Boolean used to make sure that fireMode only changes once every time the touch sensor is pressed
-bool hasCycled = false;
+
 
 //Boolean used to make sure that only one dart, or only three darts are fired for every pull of the trigger
 //Depends upon which fireMode the blaster is in
-bool hasFired = false;
+
 
 //Called to fire a single dart in semi-auto mode
-void fireDart(){
-
-  //Checks to see if hammer is still extended before loading a dart
-  bool hStop = !digitalRead(hammerStop);
-  if(!hStop){
-    Serial.println("HAMMER HAS NOT RETURNED TO STARTING POSITION. THERE IS A JAM.");
-    return;
-  }
-  
-  long long fireTimerStartMs = millis();
-  digitalWrite(pusher, LOW);
-  delay(83);
-  while(digitalRead(pusherStop)){//Goes LOW when pusherStop is pressed
-    long long curTimeMs = millis();
-    if(curTimeMs - fireTimerStartMs > 100){
-      digitalWrite(pusher, HIGH);
-      return;
-    }
-    digitalWrite(pusher, LOW);
-  }
-  digitalWrite(pusher, HIGH);
-  Serial.println((long)millis()-(long)fireTimerStartMs);
-}
 
 //Called to fire three darts in three burst mode
-void threeBurst(){
-  bool hStop = !digitalRead(hammerStop);
-  if(!hStop){
-    Serial.println("HAMMER HAS NOT RETURNED TO STARTING POSITION. THERE IS A JAM.");
-    return;
-  }
 
-  for(int i = 0; i < 3; i++){
-    long long fireTimerStartMs = millis();
-    digitalWrite(pusher, LOW);
-    delay(83);
-    
-    while(digitalRead(pusherStop)){//Goes LOW when pusherStop is pressed
-      long long curTimeMs = millis();
-      if(curTimeMs - fireTimerStartMs > 100){
-        digitalWrite(pusher, HIGH);
-        return;
-      }
-      digitalWrite(pusher, LOW);
-    }
-    Serial.println((long)millis()-(long)fireTimerStartMs);
-  }
-  digitalWrite(pusher, HIGH);
-  
-}
+
 
 //Unjam mode variables
 long unJamTimerMs = 0;
